@@ -28,7 +28,17 @@ const validateSignup = [
 async function signup(req, res) {
   const { username, password, name, email } = req.body;
   //기존 존재하는 회원인지 확인필요
+  const found = await db
+    .execute("SELECT * FROM user WHERE username=?", [username])
+    .then((result) => result[0][0]);
+
+  if (found) {
+    return res.status(409).json({ message: `${username}은 이미 존재하는 이름입니다.` });
+  }
+  //비밀번호 암호화
   const hashed = await bcrypt.hash(password, config.bcrypt.saltRounds);
+
+  //db에 생성
   const userId = db
     .execute("INSERT INTO user (username, password, name, email) VALUES (?,?,?,?)", [
       username,
@@ -37,6 +47,7 @@ async function signup(req, res) {
       email,
     ])
     .then((res) => res[0].insertId);
+  //return 해줄 토큰
   const token = jwt.sign({ userId }, config.jwt.secretKey);
   res.status(201).json({ token, username });
 }
