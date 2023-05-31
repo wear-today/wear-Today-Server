@@ -1,9 +1,18 @@
 import express from "express";
+import cors from "cors";
+import morgan from "morgan";
+import helmet from "helmet";
+import dotenv from "dotenv";
+import { config } from "./config.js";
+import { db } from "./db/database.js";
+import authRouter from "./router/auth.js";
+
+dotenv.config();
 
 const app = express();
 
 const corsOption = {
-  origin: config.cors.allowedOrigin,
+  origin: "*",
   optionsSuccessStatus: 200,
 };
 
@@ -25,4 +34,5 @@ app.use((error, req, res, next) => {
   res.sendStatus(500);
 });
 
+db.getConnection().then(console.log);
 app.listen(config.port);
