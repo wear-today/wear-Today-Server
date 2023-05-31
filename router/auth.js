@@ -19,6 +19,7 @@ const validate = (req, res, next) => {
 
 //회원가입시 유효성 검사
 const validateSignup = [
+  body("username").trim().notEmpty().withMessage("이름은 최대 5글자까지 입력 가능합니다"),
   body("password").trim().isLength({ min: 5 }).withMessage("비밀번호는 6글자 이상"),
   body("name").notEmpty().withMessage("이름 작성 필수"),
   body("email").isEmail().normalizeEmail().withMessage("유효하지 않은 이메일"),
@@ -52,6 +53,33 @@ async function signup(req, res) {
   res.status(201).json({ token, username });
 }
 
-router.post("/signup", validateSignup, signup);
+//로그인시 유효성 검사
+const validateCredentail = [
+  body("username").trim().notEmpty().withMessage("이름은 최대 5글자까지 입력 가능합니다"),
+  body("password").trim().isLength({ min: 5 }).withMessage("비밀번호는 6글자 이상"),
+  validate,
+];
 
+async function login(req, res) {
+  const { username, password } = req.body;
+  const user = await db
+    .execute("SELECT * FROM user WHERE username=?", [username])
+    .then((result) => result[0][0]);
+
+  if (!user) {
+    return res.status(401).json({ message: "유효하지 않은 회원이거나 비밀번호가 틀렸습니다." });
+  }
+
+  const isValidPassword = await bcrypt.compare(password, user.password);
+
+  if (!isValidPassword) {
+    return res.status(401).json({ message: "유효하지 않은 회원이거나 비밀번호가 틀렸습니다." });
+  }
+  const userId = user.id;
+  const token = jwt.sign({ userId }, config.jwt.secretKey);
+  res.status(200).json({ token, username });
+}
+
+router.post("/signup", validateSignup, signup);
+router.post("/login", validateCredentail, login);
 export default router;
