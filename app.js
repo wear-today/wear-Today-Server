@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { config } from "./config.js";
 import { db } from "./db/database.js";
 import authRouter from "./router/auth.js";
+import postRouter from "./router/post.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(morgan("tiny"));
 
 //route로 연결
 app.use("/auth", authRouter);
+app.use("/posts", postRouter);
 
 app.use((req, res, next) => {
   res.sendStatus(404);

@@ -2,20 +2,12 @@ import express from "express";
 import {} from "express-async-errors";
 import jwt from "jsonwebtoken";
 import { body } from "express-validator";
-import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
 import { config } from "../config.js";
 import { db } from "../db/database.js";
+import { validate } from "../middleware/vlidator.js";
 
 const router = express.Router();
-
-const validate = (req, res, next) => {
-  const errors = validationResult(req);
-  if (errors.isEmpty()) {
-    return next();
-  }
-  return res.status(400).json({ message: errors.array()[0].msg });
-};
 
 //회원가입시 유효성 검사
 const validateSignup = [
